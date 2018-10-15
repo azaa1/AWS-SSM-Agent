@@ -1,0 +1,35 @@
+# Installatino of ssm-agent on the on-premise machines (LINUX)
+---
+- name: Installing ssm-agent on the on-premise machines
+  hosts: ssm-agent
+  tasks:
+
+# Creating a directory for ssm under /tmp
+  - name: Create directory ssm
+    file:
+      path: /tmp/ssm
+      state: directory
+
+# Downloading the package from Amazon provided link
+  - name: Install ssm-agent from Amazon link
+    get_url:
+      url: https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
+      dest: /tmp/ssm/
+
+# Running installation
+  - name: Run ssm installer.
+    yum:
+      name: /tmp/ssm/amazon-ssm-agent.rpm
+      state: present
+
+# Stopping ssm-agent (It is required to STOP the agent in order to run registration)
+  - name: Stop ssm-agent
+    service: name=amazon-ssm-agent state=stopped
+
+# Running registration ( 'CODE' 'ID' and Amazon 'REGION' are required)
+  - name: Run Registration
+    command: "amazon-ssm-agent -register -code (CODE) -id (ID) -region (REGION)"
+
+# Starting ssm-agent
+  - name: Start ssm-agent
+    service: name=amazon-ssm-agent state=started
